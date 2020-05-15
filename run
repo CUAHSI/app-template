@@ -1,4 +1,5 @@
 #!/bin/sh
 
 # The command used to run your application
-python example_app/example_app.py
+cd example_app && \
+python example_app.py

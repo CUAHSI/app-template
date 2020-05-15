@@ -1,14 +1,14 @@
 # The name of the application (no spaces)
-app_name: stringed_instruments
+app_name: cuahsi_reference_search
 
 # A brief description of the app.
-description : Find all the proper nouns which have adjectives modifying them. Dump the nouns and the adjectives into a text file.
+description : Find all documents that mention CUAHSI or CUAHSI services.
 
 # Your first and last name
-user: Example User
+user: Anthony Castronova
 
 # Your email
-email: example.user@geodeepdive.org
+email: acastronova@cuahsi.org
 
 # The primary language the application is written in - will be used for installing dependencies
 # Current options are Python, R, and Go
@@ -17,6 +17,17 @@ language: Python
 # You can choose to specify a list of dictionaries, a list of terms, or both.
 # If both dictionaries and terms are provided, all terms in the dictionary PLUS
 # all listed terms will be used
-dictionaries: [instruments]
+#dictionaries: [instruments]
 
-terms: [theremin]
+terms: [kentucky,
+        water,
+        the,
+        cuahsi,
+        cuashi,
+        consortium of universities for the advancement of hydrologic sciences,
+        hydroshare,
+        hydrologic information system, 
+        hydrodesktop,
+        hydroclient]
+        #        Summer Innovator Program
+        #        cuahsi docs AND Pathfinder,

@@ -6,15 +6,41 @@ Description: Example app utilizing the GeoDeepDive infrastructure and products.
 Assumes: make setup-local has been run (so that the example database is populated)
 """
 
+import json
 import yaml
 import psycopg2
 from psycopg2.extensions import AsIs
+from psycopg2.extras import NamedTupleCursor
+
+
+class Matches:
+    def __init__(self):
+        self.matches = {}
+        self.base_url = 'https://geodeepdive.org/api/articles?id='
+
+    def insert(self, docid, term):
+
+        # insert the document record
+        if docid not in self.matches.keys():
+            self.matches[docid] = {'url': f'{self.base_url}{docid}'}
+
+        # insert the term match
+        if term in self.matches[docid].keys():
+            # increment existing match
+            self.matches[docid][term] += 1
+        else:
+            # insert new match
+            self.matches[docid][term] = 1
+
+    def json(self):
+        return json.dumps(self.matches, indent=4)
+
 
 with open('../credentials.yml', 'r') as credential_yaml:
-    credentials = yaml.load(credential_yaml)
+    credentials = yaml.load(credential_yaml, Loader=yaml.Loader)
 
 with open('../config.yml', 'r') as config_yaml:
-    config = yaml.load(config_yaml)
+    config = yaml.load(config_yaml, Loader=yaml.Loader)
 
 # Connect to Postgres
 connection = psycopg2.connect(
@@ -22,34 +48,33 @@ connection = psycopg2.connect(
     user=credentials['postgres']['user'],
     host=credentials['postgres']['host'],
     port=credentials['postgres']['port'])
-cursor = connection.cursor()
 
-proper_nouns_with_adj = {} # key: proper_noun, value: (adjective, sentence_id)
+cursor = connection.cursor(cursor_factory=NamedTupleCursor)
+
+# key: proper_noun, value: (adjective, sentence_id)
+proper_nouns_with_adj = {}
 
 # read all sentences from our NLP example database.
-cursor.execute("SELECT * FROM %(app_name)s_sentences_nlp352;", {"app_name" : AsIs(config["app_name"])},)
-for sentence in cursor:
-    sentid = sentence[1]
-    words = sentence[3]
-    poses = sentence[4]
-    dep_parents = sentence[8]
-    proper_nouns = [] # list of proper nouns
-    adjectives = [] # list of adjectives
-    for idx, pos in enumerate(poses): # look for proper nouns and adjectives
-        if pos == "NNP":
-            proper_nouns.append(idx)
-        elif pos == "JJ":
-            adjectives.append(idx)
-    for idx, parent in enumerate(dep_parents): # loop over dependencies to look for adjectives which relate to a proper noun
-        # within the table, the dep_parents is indexed from 1.  Our internal
-        # indexing is from 0, so subtract one.
-        if idx in adjectives and parent-1 in proper_nouns:
-            if words[parent-1] in proper_nouns_with_adj:
-                proper_nouns_with_adj[words[parent-1]].append((words[idx], sentid))
-            else:
-                proper_nouns_with_adj[words[parent-1]] = [(words[idx], sentid)]
+cursor.execute("SELECT * FROM %(app_name)s_sentences_nlp352;",
+               {"app_name": AsIs(config["app_name"])},)
+
+
+# list of matches
+matches = Matches()
+
+for c in cursor:
+
+    for idx, pos in enumerate(c.poses):
+        # look for match
+
+        if c.words[idx].lower() in config['terms']:
+            matches.insert(c.docid, c.words[idx])
+
+#        if pos == "NNP" or pos == "NNPS":
+#            if c.words[idx] in config['terms']:
+#                matches.insert(c.docid, c.words[idx])
+
 
 # write results to the output directory
-with open("../output/proper_nouns_with_adjectives", "w") as fout:
-    for proper_noun in proper_nouns_with_adj.keys():
-        fout.write("%s - %s\n" % (proper_noun, proper_nouns_with_adj[proper_noun]))
+with open("../output/matches.json", "w") as f:
+    f.write(matches.json())
