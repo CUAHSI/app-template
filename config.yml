@@ -17,9 +17,10 @@ language: Python
 # You can choose to specify a list of dictionaries, a list of terms, or both.
 # If both dictionaries and terms are provided, all terms in the dictionary PLUS
 # all listed terms will be used
-#dictionaries: [instruments]
+dictionaries: []
+terms: []
 
-terms: [kentucky,
+search_terms: [kentucky,
         water,
         the,
         cuahsi,

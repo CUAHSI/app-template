@@ -1,5 +1,5 @@
 #!/bin/sh
 
 # The command used to run your application
-cd example_app && \
-python example_app.py
+cd cuahsi_search && \
+python cuahsi_search_app.py
