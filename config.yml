@@ -17,7 +17,11 @@ language: Python
 # You can choose to specify a list of dictionaries, a list of terms, or both.
 # If both dictionaries and terms are provided, all terms in the dictionary PLUS
 # all listed terms will be used
-dictionaries: []
+# https://geodeepdive.org/api/dictionaries?all
+dictionaries: ["hydro",
+               "biological_processes",
+               "geology_rutgers_custom",
+               "reservoir", ]
 terms: []
 
 search_terms: [kentucky,
